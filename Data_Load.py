@@ -53,3 +53,5 @@ def plot_all_highest_snr_signals(data):
     plt.show()
 
     return num_modulations
+
+plot_all_highest_snr_signals(data)
