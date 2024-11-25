@@ -4,6 +4,7 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 import sys
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 # open the input file
 with open('RML2016.10a_dict.pkl', 'rb') as f:
