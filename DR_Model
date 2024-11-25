@@ -1,37 +1,39 @@
 import time
 from feature_extraction import features_extraction_
 from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
 import sys
+from sklearn.model_selection import train_test_split
 
+# open the input file
+with open('RML2016.10a_dict.pkl', 'rb') as f:
+    data = pickle.load(f, encoding='latin1')  # Use 'latin1' encoding to avoid Unicode errors
 
+with open('data_details.txt', 'w') as f:
+    for key, signals in data.items():
+        mod_type, snr = key
+        print(f"Modulation Type: {mod_type}, SNR: {snr}, Shape: {signals.shape}", file=f)
 
-# Input file to pass to the function
-data_file = "./data/RML2016.10a_dict.pkl"
+##Set a runtime timer for the training only
+start_time = time.time()
 
-features_df = extract_features(data_file)
-print (features_df.shape )
-count = (features_df['signal_type'] == 'BPSK').sum()
-print(count)
-
+#creat dataframe
+features_df = features_extraction_(data)
 
 # Create new dataframe for target variable or label column for supervised learning
 y = pd.DataFrame(features_df['signal_type'])
 
-training_features = ["magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis",
-                "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency",
-                "average_power"]
+ # convert the target variable into into numerical valuesto a numerical value
+ label_encoder = LabelEncoder()
+ encoded_labels = label_encoder.transform(y)
 
 # Create new dataframe for features variables or training columns for supervised learning
+training_features = ["magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
 feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
-
+# split the data for 70% train and 30% test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Standardize the features (important for SVM performance)
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
 
 # Create an SVM classifier (use linear kernel in this example)
 svm_model = SVC(kernel='linear', random_state=42)
