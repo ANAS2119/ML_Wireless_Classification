@@ -25,8 +25,11 @@ features_df = features_extraction_(data)
 y = pd.DataFrame(features_df['signal_type'])
 
  # convert the target variable into into numerical valuesto a numerical value
- label_encoder = LabelEncoder()
- encoded_labels = label_encoder.transform(y)
+ d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
+ features_df['signal_type'] = features_df['signal_type'].map(d)
+
+ ##label_encoder = LabelEncoder()
+ ##encoded_labels = label_encoder.transform(y)
 
 # Create new dataframe for features variables or training columns for supervised learning
 training_features = ["magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
