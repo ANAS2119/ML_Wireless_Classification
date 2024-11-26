@@ -5,6 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 import sys
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score, confusion_matrix
+import seaborn as sns
 
 
 # open the input file
@@ -22,12 +24,21 @@ start_time = time.time()
 #creat dataframe
 features_df = features_extraction_(data)
 
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute the model: {elapsed_time:.3f} seconds")
+
+
 # Create new dataframe for target variable or label column for supervised learning
 y = pd.DataFrame(features_df['signal_type'])
 
- # convert the target variable into into numerical valuesto a numerical value
- d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
- features_df['signal_type'] = features_df['signal_type'].map(d)
+# Label encoding the target variable
+label_encoder = LabelEncoder()
+encoded_labels = label_encoder.fit_transform(y)
+
+# convert the target variable into into numerical valuesto a numerical value
+#d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
+#features_df['signal_type'] = features_df['signal_type'].map(d)
+#y=features_df['signal_type']
 
 
 
@@ -37,7 +48,7 @@ feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
 # split the data for 70% train and 30% test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, encoded_labels, test_size=0.2, random_state=42)
 
 # Decision tree classifier
 tree_model = DecisionTreeClassifier(random_state=42)
@@ -62,6 +73,23 @@ grid_search.fit(X_train, y_train)
 print("best accuracy", grid_search.best_score_)
 print(grid_search.best_estimator_)
 
- # Predictions on the  dataset
-    y_test = tree_model.predict(X_test)
-    y_pred_train = svm_model.predict(X_train)
+# Predictions on the  dataset
+y_test = tree_model.predict(X_test)
+y_pred_train = svm_model.predict(X_train)
+
+# Evaluate the model accurecy
+accuracy = accuracy_score(y_test, y_pred_test)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+
+# Confusion matrix evaluation
+confusionMatrix = confusion_matrix(y_test, y_pred_test)
+print("Confusion Matrix:")
+print(confusionMatrix)
+
+# heatmap plot for confusion matrix
+plt.figure(figsize=(11, 11))
+sns.heatmap(confusionMatrix, annot=True, fmt="d", cmap="Blues",
+xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
+plt.title("Signal Type Confusion Matrix", fontsize=14)
+plt.xlabel("Predicted", fontsize=14)
+plt.ylabel("Actual", fontsize=14)
