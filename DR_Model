@@ -93,3 +93,9 @@ xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
 plt.title("Signal Type Confusion Matrix", fontsize=14)
 plt.xlabel("Predicted", fontsize=14)
 plt.ylabel("Actual", fontsize=14)
+
+#Save file to desktop
+DIRECTORY="."
+model_file_name = "ConfusionMatrix.png"
+save_path = os.path.join(DIRECTORY, model_file_name)
+plt.savefig(save_path)
