@@ -4,7 +4,8 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 import sys
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import GridSearchCV
+
 
 # open the input file
 with open('RML2016.10a_dict.pkl', 'rb') as f:
@@ -28,8 +29,7 @@ y = pd.DataFrame(features_df['signal_type'])
  d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
  features_df['signal_type'] = features_df['signal_type'].map(d)
 
- ##label_encoder = LabelEncoder()
- ##encoded_labels = label_encoder.transform(y)
+
 
 # Create new dataframe for features variables or training columns for supervised learning
 training_features = ["magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
@@ -39,33 +39,25 @@ X = pd.DataFrame(columns=training_features, data=feature_transform, index=featur
 # split the data for 70% train and 30% test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Create an SVM classifier (use linear kernel in this example)
-svm_model = SVC(kernel='linear', random_state=42)
+#Hyperparmater tuning using GridSearchCV
+param_grid = {
+    'max_depth': range(1, 10, 1),
+    'min_samples_leaf': range(1, 20, 2),
+    'min_samples_split': range(2, 20, 2),
+    'criterion': ["entropy", "gini"]
+}
+# Decision tree classifier
+tree_model = DecisionTreeClassifier(random_state=42)
 
-# Train the model
-svm_model.fit(X_train, y_train)
+# GridSearchCV
+grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, 
+                           cv=5, verbose=True)
+grid_search.fit(X_train, y_train)
 
-# Predict on the test set
-y_pred = svm_model.predict(X_test)
+# Best score and estimator
+print("best accuracy", grid_search.best_score_)
+print(grid_search.best_estimator_)
 
-# Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy:.2f}")
-
-#auc_roc = roc_auc_score(y_test, y_pred)
-#print("AUC-ROC:", auc_roc)
-
-# Confusion matrix
-confusionMatrix = confusion_matrix(y_test, y_pred)
-print("Confusion Matrix:")
-print(confusionMatrix)
-
-# Plotting confusion matrix
-plt.figure(figsize=(5, 5))
-sns.heatmap(confusionMatrix, annot=True, annot_kws={"fontsize": 12}, fmt="d", cmap="Blues", cbar=False, linewidths=0.5, linecolor="black")
-plt.title("Signal Type Confusion Matrix", fontsize=14)
-plt.xlabel("Predicted", fontsize=14)
-plt.ylabel("Actual", fontsize=14)
-plt.xticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5], labels=["BPSK","QPSK","QAM16","WBFM","GFSK"], fontsize=10)
-plt.yticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5], labels=["BPSK","QPSK","QAM16","WBFM","GFSK"], fontsize=10)
-plt.show()
+ # Predictions on the  dataset
+    y_test = tree_model.predict(X_test)
+    y_pred_train = svm_model.predict(X_train)
