@@ -39,6 +39,11 @@ X = pd.DataFrame(columns=training_features, data=feature_transform, index=featur
 # split the data for 70% train and 30% test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Decision tree classifier
+tree_model = DecisionTreeClassifier(random_state=42)
+
+tree_model.fit(X_train, y_train)
+
 #Hyperparmater tuning using GridSearchCV
 param_grid = {
     'max_depth': range(1, 10, 1),
@@ -46,10 +51,7 @@ param_grid = {
     'min_samples_split': range(2, 20, 2),
     'criterion': ["entropy", "gini"]
 }
-# Decision tree classifier
-tree_model = DecisionTreeClassifier(random_state=42)
 
-tree_model.fit(X_train, y_train)
 
 # GridSearchCV
 grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, 
