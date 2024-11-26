@@ -49,6 +49,8 @@ param_grid = {
 # Decision tree classifier
 tree_model = DecisionTreeClassifier(random_state=42)
 
+tree_model.fit(X_train, y_train)
+
 # GridSearchCV
 grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, 
                            cv=5, verbose=True)
