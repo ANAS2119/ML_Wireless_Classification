@@ -99,3 +99,10 @@ DIRECTORY="."
 model_file_name = "ConfusionMatrix.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
+
+#Visualize the Decision tree
+plt.figure(figsize=(18, 15))
+plot_tree(tree_model, filled=True, feature_names=training_features,
+          class_names=features_df['signal_type'], fontsize=5, label='root')
+plt.savefig('tree_high_dpi', dpi=100)
+plt.show()
