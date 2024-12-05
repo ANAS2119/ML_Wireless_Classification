@@ -43,7 +43,7 @@ encoded_labels = label_encoder.fit_transform(y)
 
 
 # Create new dataframe for features variables or training columns for supervised learning
-training_features = ["magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
+training_features = ["SNR", "magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
 feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
@@ -54,6 +54,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, encoded_labels, test_size
 tree_model = DecisionTreeClassifier(random_state=42)
 
 tree_model.fit(X_train, y_train)
+
+
+# Predictions on the  dataset
+y_pred_test = tree_model.predict(X_test)
+
 
 #Hyperparmater tuning using GridSearchCV
 param_grid = {
@@ -72,10 +77,6 @@ grid_search.fit(X_train, y_train)
 # Best score and estimator
 print("best accuracy", grid_search.best_score_)
 print(grid_search.best_estimator_)
-
-# Predictions on the  dataset
-y_test = tree_model.predict(X_test)
-y_pred_train = svm_model.predict(X_train)
 
 # Evaluate the model accurecy
 accuracy = accuracy_score(y_test, y_pred_test)
