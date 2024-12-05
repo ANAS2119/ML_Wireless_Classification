@@ -17,7 +17,7 @@ def features_extraction_(data):
         # print(signal_type)
         if signal_type in ["BPSK","QPSK","QAM16","WBFM","GFSK"]:
             snr = key[1]
-            if int(snr) =< 100: # >= 0 for only non-ngative SNR
+            if int(snr) <= 100:: # >= 0 for only non-ngative SNR
                 samples = data[key]
                 # calculate the magnitude anf phase for each signal (sample)
                 for i in range(len(samples)): # each i represent a sample or signal, total 1000 signals
