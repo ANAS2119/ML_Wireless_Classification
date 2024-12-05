@@ -17,7 +17,7 @@ def features_extraction_(data):
         # print(signal_type)
         if signal_type in ["BPSK","QPSK","QAM16","WBFM","GFSK"]:
             snr = key[1]
-            if int(snr) >= 0:
+            if int(snr) =< 100: # >= 0 for only non-ngative SNR
                 samples = data[key]
                 # calculate the magnitude anf phase for each signal (sample)
                 for i in range(len(samples)): # each i represent a sample or signal, total 1000 signals
@@ -53,6 +53,6 @@ def features_extraction_(data):
     df = pd.DataFrame(array_of_data, columns = columnlabels) # define the complete dataset with rows (samples) and columns ( features)
 
     # create a csv file 
-    df.to_csv("extracted_features_5_types_snr_gt_zero.csv", index=False)
+    df.to_csv("extracted_features_5_types_all_snr.csv", index=False)
     
     return df

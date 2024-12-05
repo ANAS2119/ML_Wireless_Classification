@@ -100,6 +100,23 @@ model_file_name = "ConfusionMatrix.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 
+
+#Accuracy vs SNR
+unique_snrs = sorted(set(X_test[:, 0]))  # re-ordered SNR from min to max, without repeating
+accuracy_per_snr = []
+for snr in unique_snrs:
+    # Select samples with the current SNR
+    snr_indices = np.where(X_test[:, 0] == snr)
+    X_snr = X_test[snr_indices]
+    y_snr = y_test[snr_indices]
+    y_pred = y_pred_test[snr_indices]
+    accuracy = accuracy_score(y_snr, y_pred)
+    accuracy_per_snr.append(accuracy * 100)  # Convert to percentage
+
+    print(f"SNR: {snr} dB, Accuracy: {accuracy * 100:.2f}%")
+
+
+
 #Visualize the Decision tree
 plt.figure(figsize=(18, 15))
 plot_tree(tree_model, filled=True, feature_names=training_features,
