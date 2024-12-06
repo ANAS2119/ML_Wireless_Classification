@@ -103,19 +103,51 @@ plt.savefig(save_path)
 
 
 #Accuracy vs SNR
-unique_snrs = sorted(set(X_test[:, 0]))  # re-ordered SNR from min to max, without repeating
+unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
 accuracy_per_snr = []
 for snr in unique_snrs:
-    # Select samples with the current SNR
-    snr_indices = np.where(X_test[:, 0] == snr)
-    X_snr = X_test[snr_indices]
-    y_snr = y_test[snr_indices]
-    y_pred = y_pred_test[snr_indices]
-    accuracy = accuracy_score(y_snr, y_pred)
+    snr_indices = np.where(X_test['snr'] == snr)
+    X_snr = X_test[X_test['snr']==snr]
+    y_snr=y_test[snr_indices]
+    y_pred_test_snr= tree_model.predict(X_snr)
+    accuracy = accuracy_score(y_snr, y_pred_test_snr)
     accuracy_per_snr.append(accuracy * 100)  # Convert to percentage
-
     print(f"SNR: {snr} dB, Accuracy: {accuracy * 100:.2f}%")
 
+#Scale the SNR values between -18 and 20 using normalization
+SNR_min = -20
+SNR_max = 18
+scaled_SNR = [(x - min(unique_snrs)) / (max(unique_snrs) - min(unique_snrs)) * (SNR_max - SNR_min) + SNR_min for x in unique_snrs]
+# Plot Model Recognition Accuracy vs. SNR
+plt.figure(figsize=(10, 6))
+plt.plot(scaled_SNR, accuracy_per_snr, 'b-o', label='Model Accuracy')
+
+# Find the maximum Accuracy value and its corresponding SNR
+max_accuracy = max(accuracy_per_snr)
+max_accuracy_index = accuracy_per_snr.index(max_accuracy)
+max_accuracy_snr = scaled_SNR[max_accuracy_index]
+
+plt.plot(max_accuracy_snr, max_accuracy, marker='o', markersize=8, color='r', label='_nolegend_')
+# Annotate the max point on the plot
+plt.annotate(f'Max: {round(max_accuracy,2)}%',
+            xy=(max_accuracy_snr, max_accuracy),
+            xytext=(max_accuracy_snr - 5, max_accuracy + 5),
+            bbox=dict(boxstyle="round", facecolor="white", edgecolor="white", linewidth=1, alpha=0.5),
+            fontsize=8)
+
+plt.xlabel("SNR (dB)")
+plt.ylabel("Recognition Accuracy (%)")
+plt.title("Recognition Accuracy vs. SNR for Modulation Classification")
+plt.legend()
+plt.grid(True)
+plt.ylim(0, 100)
+
+#Save file to desktop
+DIRECTORY="."
+model_file_name = "Accuracy_vs_SNR.png"
+save_path = os.path.join(DIRECTORY, model_file_name)
+plt.savefig(save_path)
+plt.show(block=False)
 
 
 #Visualize the Decision tree
