@@ -55,19 +55,27 @@ tree_model = DecisionTreeClassifier(random_state=42)
 
 tree_model.fit(X_train, y_train)
 
+# prediction on train set
+y_pred_train = tree_model.predict(X_train)
+
 
 # Predictions on the  dataset
 y_pred_test = tree_model.predict(X_test)
 
 
 #Hyperparmater tuning using GridSearchCV
-param_grid = {
-    'max_depth': range(1, 10, 1),
-    'min_samples_leaf': range(1, 20, 2),
-    'min_samples_split': range(2, 20, 2),
-    'criterion': ["entropy", "gini"]
-}
-
+#param_grid = {
+#    'max_depth': range(1, 10, 1),
+#    'min_samples_leaf': range(1, 20, 2),
+#    'min_samples_split': range(2, 20, 2),
+#    'criterion': ["entropy", "gini"]
+#}
+param_grid = dict(
+    max_depth= [10, 20, 30, None],
+    min_samples_leaf= [2, 5, 10],
+    min_samples_split= [1, 2, 4],
+    criterion= ["entropy", "gini"]
+)
 
 # GridSearchCV
 grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
@@ -82,7 +90,6 @@ accuracy = accuracy_score(y_test, y_pred_test)
 print(f"Best parameters: {best_params}")
 print("best accuracy", grid_search.best_score_)
 print("best_tree_mode", grid_search.best_estimator_)
-print(f"Accuracy: {accuracy * 100:.2f}%")
 
 # Evaluate the model accurecy
 accuracy = accuracy_score(y_test, y_pred_test)
@@ -107,6 +114,14 @@ model_file_name = "ConfusionMatrix.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 
+
+# Print Classification Report
+print("Classification Report for Modulation Types:")
+print("Train Result:n================================================")
+
+print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_))
+print("Test Result:n================================================")
+print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_))
 
 #Accuracy vs SNR
 unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
