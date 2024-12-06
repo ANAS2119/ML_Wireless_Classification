@@ -70,13 +70,19 @@ param_grid = {
 
 
 # GridSearchCV
-grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, 
-                           cv=5, verbose=True)
+grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
 grid_search.fit(X_train, y_train)
 
+best_tree_model = grid_search.best_estimator_ # Get the best estimator from the grid search
+y_pred_test = tree_model.predict(X_test)
+best_params = grid_search.best_params_
+accuracy = accuracy_score(y_test, y_pred_test)
+
 # Best score and estimator
+print(f"Best parameters: {best_params}")
 print("best accuracy", grid_search.best_score_)
-print(grid_search.best_estimator_)
+print("best_tree_mode", grid_search.best_estimator_)
+print(f"Accuracy: {accuracy * 100:.2f}%")
 
 # Evaluate the model accurecy
 accuracy = accuracy_score(y_test, y_pred_test)
