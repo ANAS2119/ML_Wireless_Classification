@@ -43,7 +43,7 @@ encoded_labels = label_encoder.fit_transform(y)
 
 
 # Create new dataframe for features variables or training columns for supervised learning
-training_features = ["SNR", "magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
+training_features = ["snr", "magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
 feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
