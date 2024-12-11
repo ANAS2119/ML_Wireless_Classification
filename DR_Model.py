@@ -51,7 +51,7 @@ X = pd.DataFrame(columns=training_features, data=feature_transform, index=featur
 X_train, X_test, y_train, y_test = train_test_split(X, encoded_labels, test_size=0.2, random_state=42)
 
 # Decision tree classifier
-tree_model = DecisionTreeClassifier(random_state=42)
+tree_model = DecisionTreeClassifier(criterion='gini', max_depth= 20, min_samples_leaf= 10, min_samples_split=2, random_state=42)
 
 tree_model.fit(X_train, y_train)
 
