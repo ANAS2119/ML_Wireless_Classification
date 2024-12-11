@@ -62,6 +62,9 @@ y_pred_train = tree_model.predict(X_train)
 # Predictions on the  dataset
 y_pred_test = tree_model.predict(X_test)
 
+# Evaluate the model accurecy
+accuracy = accuracy_score(y_test, y_pred_test)
+print(f"Accuracy: {accuracy * 100:.2f}%")
 
 #Hyperparmater tuning using GridSearchCV
 #param_grid = {
@@ -91,9 +94,7 @@ print(f"Best parameters: {best_params}")
 print("best accuracy", grid_search.best_score_)
 print("best_tree_mode", grid_search.best_estimator_)
 
-# Evaluate the model accurecy
-accuracy = accuracy_score(y_test, y_pred_test)
-print(f"Accuracy: {accuracy * 100:.2f}%")
+
 
 # Confusion matrix evaluation
 confusionMatrix = confusion_matrix(y_test, y_pred_test)
