@@ -85,12 +85,13 @@ plt.savefig(save_path)
 
 
 # Print Classification Report
-print("Classification Report for Modulation Types:")
-print("Train Result:n================================================")
+with open('Classification_report_Model_1.txt', 'w') as f:
+    print("Classification Report for Modulation Types:", file=f)
+    print("Train Result:n================================================", file=f)
 
-print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_))
-print("Test Result:n================================================")
-print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_))
+    print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_), file=f)
+    print("Test Result:n================================================", file=f)
+    print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_), file=f)
 
 #Accuracy vs SNR
 unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
