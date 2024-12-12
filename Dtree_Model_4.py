@@ -1,12 +1,22 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
+from scipy.stats import skew, kurtosis, entropy
+from scipy.signal import welch
+import pandas as pd
 import time
-from feature_extraction import features_extraction_
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
-import sys
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+import os
+import sys
+import joblib
+from sklearn.tree import plot_tree
+from sklearn.preprocessing import StandardScaler
 
 
 # open the input file
@@ -18,7 +28,7 @@ with open('data_details.txt', 'w') as f:
         mod_type, snr = key
         print(f"Modulation Type: {mod_type}, SNR: {snr}, Shape: {signals.shape}", file=f)
 
-##Set a runtime timer for the training only
+##Set a runtime timer
 start_time = time.time()
 
 #creat dataframe
@@ -35,18 +45,18 @@ y = pd.DataFrame(features_df['signal_type'])
 label_encoder = LabelEncoder()
 encoded_labels = label_encoder.fit_transform(y)
 
-# convert the target variable into into numerical valuesto a numerical value
-#d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
-#features_df['signal_type'] = features_df['signal_type'].map(d)
-#y=features_df['signal_type']
-
-
 
 # Create new dataframe for features variables or training columns for supervised learning
 training_features = ["snr", "magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
 feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
+# Standardize the features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+##Set a runtime timer for training and prediction
+start_time = time.time()
 # split the data for 70% train and 30% test
 X_train, X_test, y_train, y_test = train_test_split(X, encoded_labels, test_size=0.2, random_state=42)
 
@@ -66,35 +76,8 @@ y_pred_test = tree_model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred_test)
 print(f"Accuracy: {accuracy * 100:.2f}%")
 
-#Hyperparmater tuning using GridSearchCV
-#param_grid = {
-#    'max_depth': range(1, 10, 1),
-#    'min_samples_leaf': range(1, 20, 2),
-#    'min_samples_split': range(2, 20, 2),
-#    'criterion': ["entropy", "gini"]
-#}
-param_grid = dict(
-    max_depth= [10, 20, 30, None],
-    min_samples_leaf= [2, 5, 10],
-    min_samples_split= [1, 2, 4],
-    criterion= ["entropy", "gini"]
-)
-
-# GridSearchCV
-grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
-grid_search.fit(X_train, y_train)
-
-best_tree_model = grid_search.best_estimator_ # Get the best estimator from the grid search
-y_pred_test = tree_model.predict(X_test)
-best_params = grid_search.best_params_
-accuracy = accuracy_score(y_test, y_pred_test)
-
-# Best score and estimator
-print(f"Best parameters: {best_params}")
-print("best accuracy", grid_search.best_score_)
-print("best_tree_mode", grid_search.best_estimator_)
-
-
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute the model: {elapsed_time:.3f} seconds")
 
 # Confusion matrix evaluation
 confusionMatrix = confusion_matrix(y_test, y_pred_test)
@@ -111,30 +94,36 @@ plt.ylabel("Actual", fontsize=14)
 
 #Save file to desktop
 DIRECTORY="."
-model_file_name = "ConfusionMatrix.png"
+model_file_name = "Model4_ConfusionMatrix.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 
 
 # Print Classification Report
-print("Classification Report for Modulation Types:")
-print("Train Result:n================================================")
+with open('Classification_report_Model_4.txt', 'w') as f:
+    print("Classification Report for Modulation Types:", file=f)
+    print("Train Result:n================================================", file=f)
 
-print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_))
-print("Test Result:n================================================")
-print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_))
+    print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_), file=f)
+    print("Test Result:n================================================", file=f)
+    print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_), file=f)
 
 #Accuracy vs SNR
-unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
+start_time = time.time()
+
+unique_snrs = sorted(set(X_test[:, 0])) # re-ordered SNR from min to max, without repeating
 accuracy_per_snr = []
 for snr in unique_snrs:
-    snr_indices = np.where(X_test['snr'] == snr)
-    X_snr = X_test[X_test['snr']==snr]
+    snr_indices = np.where(X_test[:, 0] == snr)
+    X_snr = X_test[snr_indices]
     y_snr=y_test[snr_indices]
     y_pred_test_snr= tree_model.predict(X_snr)
     accuracy = accuracy_score(y_snr, y_pred_test_snr)
     accuracy_per_snr.append(accuracy * 100)  # Convert to percentage
     print(f"SNR: {snr} dB, Accuracy: {accuracy * 100:.2f}%")
+
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute the model: {elapsed_time:.3f} seconds")
 
 #Scale the SNR values between -18 and 20 using normalization
 SNR_min = -20
@@ -166,15 +155,7 @@ plt.ylim(0, 100)
 
 #Save file to desktop
 DIRECTORY="."
-model_file_name = "Accuracy_vs_SNR.png"
+model_file_name = "Model4_Accuracy_vs_SNR.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 plt.show(block=False)
-
-
-#Visualize the Decision tree
-plt.figure(figsize=(18, 15))
-plot_tree(tree_model, filled=True, feature_names=training_features,
-          class_names=features_df['signal_type'], fontsize=5, label='root')
-plt.savefig('tree_high_dpi', dpi=100)
-plt.show()

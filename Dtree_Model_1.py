@@ -1,11 +1,22 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
+from scipy.stats import skew, kurtosis, entropy
+from scipy.signal import welch
+import pandas as pd
 import time
-from feature_extraction import features_extraction_
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
-import sys
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+import os
+import sys
+import joblib
+from sklearn.tree import plot_tree
+from sklearn.preprocessing import StandardScaler
 
 
 # open the input file
