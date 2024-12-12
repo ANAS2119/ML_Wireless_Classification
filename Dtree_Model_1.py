@@ -106,7 +106,7 @@ for snr in unique_snrs:
     print(f"SNR: {snr} dB, Accuracy: {accuracy * 100:.2f}%")
 
 #Scale the SNR values between -18 and 20 using normalization
-SNR_min = -20
+SNR_min = 0
 SNR_max = 18
 scaled_SNR = [(x - min(unique_snrs)) / (max(unique_snrs) - min(unique_snrs)) * (SNR_max - SNR_min) + SNR_min for x in unique_snrs]
 # Plot Model Recognition Accuracy vs. SNR

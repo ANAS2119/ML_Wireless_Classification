@@ -85,12 +85,13 @@ plt.savefig(save_path)
 
 
 # Print Classification Report
-print("Classification Report for Modulation Types:")
-print("Train Result:n================================================")
+with open('Classification_report_Model_2.txt', 'w') as f:
+    print("Classification Report for Modulation Types:", file=f)
+    print("Train Result:n================================================", file=f)
 
-print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_))
-print("Test Result:n================================================")
-print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_))
+    print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_), file=f)
+    print("Test Result:n================================================", file=f)
+    print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_), file=f)
 
 #Accuracy vs SNR
 unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
@@ -139,10 +140,3 @@ save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 plt.show(block=False)
 
-
-#Visualize the Decision tree
-plt.figure(figsize=(18, 15))
-plot_tree(tree_model, filled=True, feature_names=training_features,
-          class_names=features_df['signal_type'], fontsize=5, label='root')
-plt.savefig('tree_high_dpi', dpi=100)
-plt.show()

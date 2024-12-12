@@ -18,7 +18,7 @@ with open('data_details.txt', 'w') as f:
         mod_type, snr = key
         print(f"Modulation Type: {mod_type}, SNR: {snr}, Shape: {signals.shape}", file=f)
 
-##Set a runtime timer for the training only
+##Set a runtime timer
 start_time = time.time()
 
 #creat dataframe
@@ -35,23 +35,19 @@ y = pd.DataFrame(features_df['signal_type'])
 label_encoder = LabelEncoder()
 encoded_labels = label_encoder.fit_transform(y)
 
-# convert the target variable into into numerical valuesto a numerical value
-#d = {'BPSK': 0, 'QPSK': 1, 'QAM16': 2, 'WBFM':3}
-#features_df['signal_type'] = features_df['signal_type'].map(d)
-#y=features_df['signal_type']
-
-
 
 # Create new dataframe for features variables or training columns for supervised learning
 training_features = ["snr", "magnitude_mean", "magnitude_std", "magnitude_skew", "magnitude_kurtosis", "phase_mean", "phase_std", "phase_skew", "phase_kurtosis", "spectral_entropy", "peak_frequency", "average_power"]
 feature_transform = features_df[training_features]
 X = pd.DataFrame(columns=training_features, data=feature_transform, index=features_df.index)
 
+##Set a runtime timer for training and prediction
+start_time = time.time()
 # split the data for 70% train and 30% test
 X_train, X_test, y_train, y_test = train_test_split(X, encoded_labels, test_size=0.2, random_state=42)
 
 # Decision tree classifier
-tree_model = DecisionTreeClassifier(criterion='gini', max_depth= 20, min_samples_leaf= 10, min_samples_split=2, random_state=42)
+tree_model = DecisionTreeClassifier(random_state=42)
 
 tree_model.fit(X_train, y_train)
 
@@ -66,6 +62,10 @@ y_pred_test = tree_model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred_test)
 print(f"Accuracy: {accuracy * 100:.2f}%")
 
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute the model: {elapsed_time:.3f} seconds")
+
+
 #Hyperparmater tuning using GridSearchCV
 #param_grid = {
 #    'max_depth': range(1, 10, 1),
@@ -73,6 +73,7 @@ print(f"Accuracy: {accuracy * 100:.2f}%")
 #    'min_samples_split': range(2, 20, 2),
 #    'criterion': ["entropy", "gini"]
 #}
+
 param_grid = dict(
     max_depth= [10, 20, 30, None],
     min_samples_leaf= [2, 5, 10],
@@ -84,7 +85,7 @@ param_grid = dict(
 grid_search = GridSearchCV(estimator=tree_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
 grid_search.fit(X_train, y_train)
 
-best_tree_model = grid_search.best_estimator_ # Get the best estimator from the grid search
+best_tree_model = grid_search.best_estimator_ # Get the best estimator from the grid search ## update the tree_model accordingly with the best parameters and run the model again with the new paramters.
 y_pred_test = tree_model.predict(X_test)
 best_params = grid_search.best_params_
 accuracy = accuracy_score(y_test, y_pred_test)
@@ -93,8 +94,6 @@ accuracy = accuracy_score(y_test, y_pred_test)
 print(f"Best parameters: {best_params}")
 print("best accuracy", grid_search.best_score_)
 print("best_tree_mode", grid_search.best_estimator_)
-
-
 
 # Confusion matrix evaluation
 confusionMatrix = confusion_matrix(y_test, y_pred_test)
@@ -111,18 +110,19 @@ plt.ylabel("Actual", fontsize=14)
 
 #Save file to desktop
 DIRECTORY="."
-model_file_name = "ConfusionMatrix.png"
+model_file_name = "Model3_ConfusionMatrix.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 
 
 # Print Classification Report
-print("Classification Report for Modulation Types:")
-print("Train Result:n================================================")
+with open('Classification_report_Model_3.txt', 'w') as f:
+    print("Classification Report for Modulation Types:", file=f)
+    print("Train Result:n================================================", file=f)
 
-print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_))
-print("Test Result:n================================================")
-print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_))
+    print(classification_report(y_train, y_pred_train, target_names=label_encoder.classes_), file=f)
+    print("Test Result:n================================================", file=f)
+    print(classification_report(y_test, y_pred_test, target_names=label_encoder.classes_), file=f)
 
 #Accuracy vs SNR
 unique_snrs = sorted(set(X_test['snr'])) # re-ordered SNR from min to max, without repeating
@@ -166,15 +166,7 @@ plt.ylim(0, 100)
 
 #Save file to desktop
 DIRECTORY="."
-model_file_name = "Accuracy_vs_SNR.png"
+model_file_name = "Model3_Accuracy_vs_SNR.png"
 save_path = os.path.join(DIRECTORY, model_file_name)
 plt.savefig(save_path)
 plt.show(block=False)
-
-
-#Visualize the Decision tree
-plt.figure(figsize=(18, 15))
-plot_tree(tree_model, filled=True, feature_names=training_features,
-          class_names=features_df['signal_type'], fontsize=5, label='root')
-plt.savefig('tree_high_dpi', dpi=100)
-plt.show()
